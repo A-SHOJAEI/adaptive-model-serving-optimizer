@@ -1,0 +1,62 @@
+# Development environment configuration
+# This file contains development-specific overrides for the default configuration.
+
+# Override global settings for development
+debug: true
+log_level: "DEBUG"
+
+# Use CPU for development to avoid GPU conflicts
+device: "cpu"
+
+# Disable performance optimizations for easier debugging
+mixed_precision: false
+compile_model: false
+optimize_memory: false
+
+# Serving configuration adjustments for development
+serving:
+  pytorch_config:
+    device: "cpu"
+    precision: "float32"
+    jit_compile: false
+    compile_mode: "default"
+
+  # Use only CPU provider for ONNX in development
+  onnx_config:
+    providers:
+      - "CPUExecutionProvider"
+    provider_options:
+      - {}
+
+# Reduced batch sizes for faster iteration
+training:
+  batch_size: 8
+  epochs: 5
+  early_stopping_patience: 3
+  checkpoint_frequency: 2
+
+# Faster data loading settings
+data:
+  num_workers: 2
+  prefetch_factor: 1
+  pin_memory: false
+
+# More frequent updates for development testing
+bandits:
+  update_frequency: 5
+  window_size: 100
+
+# Lower monitoring thresholds for development testing
+monitoring:
+  metric_collection_interval: 2
+  alert_thresholds:
+    p99_latency_ms: 200.0  # More lenient for CPU
+    accuracy_drop: 0.02
+    error_rate: 0.1
+    memory_usage_percent: 95.0
+
+# Development MLflow settings
+mlflow:
+  tracking_uri: "file:./mlruns"
+  experiment_name: "adaptive_serving_optimizer_dev"
+  auto_log: false  # Manual control in development

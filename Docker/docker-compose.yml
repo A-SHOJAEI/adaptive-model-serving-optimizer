@@ -1,0 +1,226 @@
+# Docker Compose configuration for Adaptive Model Serving Optimizer
+version: '3.8'
+
+services:
+  # Main application service
+  adaptive-serving:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile
+      args:
+        BUILD_DATE: ${BUILD_DATE:-2024-01-01}
+        VERSION: ${VERSION:-1.0.0}
+        VCS_REF: ${VCS_REF:-main}
+    image: adaptive-serving-optimizer:${VERSION:-latest}
+    container_name: adaptive-serving-optimizer
+    volumes:
+      - ../data:/app/data
+      - ../outputs:/app/outputs
+      - ../cache:/app/cache
+      - ../logs:/app/logs
+      - ../configs:/app/configs
+    environment:
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+      - PYTHONPATH=/app/src
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - adaptive-serving-network
+    depends_on:
+      - mlflow-server
+      - redis
+    profiles:
+      - full
+
+  # MLflow tracking server
+  mlflow-server:
+    image: python:3.9-slim
+    container_name: adaptive-serving-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow-data:/mlflow
+      - ../outputs:/outputs
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlflow/mlflow.db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlflow/artifacts
+    command: >
+      bash -c "
+        pip install mlflow==2.5.0 &&
+        mlflow server
+        --backend-store-uri sqlite:///mlflow/mlflow.db
+        --default-artifact-root /mlflow/artifacts
+        --host 0.0.0.0
+        --port 5000
+      "
+    networks:
+      - adaptive-serving-network
+    profiles:
+      - full
+      - mlflow
+
+  # Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: adaptive-serving-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - adaptive-serving-network
+    profiles:
+      - full
+      - cache
+
+  # Jupyter notebook service
+  jupyter:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile
+    image: adaptive-serving-optimizer:${VERSION:-latest}
+    container_name: adaptive-serving-jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - ..:/app
+      - jupyter-data:/home/appuser/.jupyter
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-adaptive-serving}
+    command: >
+      bash -c "
+        pip install jupyter jupyterlab plotly &&
+        jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+        --notebook-dir=/app --NotebookApp.token='${JUPYTER_TOKEN:-adaptive-serving}'
+      "
+    networks:
+      - adaptive-serving-network
+    profiles:
+      - jupyter
+      - development
+
+  # Training service
+  training:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile
+    image: adaptive-serving-optimizer:${VERSION:-latest}
+    container_name: adaptive-serving-training
+    volumes:
+      - ../data:/app/data
+      - ../outputs:/app/outputs
+      - ../cache:/app/cache
+      - ../configs:/app/configs
+    environment:
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+    command: >
+      python3 scripts/train.py
+      --config configs/default.yaml
+      --experiments ${EXPERIMENTS:-1000}
+      --output-dir /app/outputs/training
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - adaptive-serving-network
+    depends_on:
+      - mlflow-server
+    profiles:
+      - training
+
+  # Evaluation service
+  evaluation:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile
+    image: adaptive-serving-optimizer:${VERSION:-latest}
+    container_name: adaptive-serving-evaluation
+    volumes:
+      - ../outputs:/app/outputs
+    command: >
+      python3 scripts/evaluate.py
+      --results /app/outputs/training/training_results.json
+      --experiment-data /app/outputs/training/experiment_data.json
+      --output-dir /app/outputs/evaluation
+    networks:
+      - adaptive-serving-network
+    profiles:
+      - evaluation
+
+  # Monitoring dashboard (placeholder for future implementation)
+  monitoring:
+    image: grafana/grafana:latest
+    container_name: adaptive-serving-monitoring
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    networks:
+      - adaptive-serving-network
+    profiles:
+      - monitoring
+
+  # Development service with all tools
+  dev:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile
+    image: adaptive-serving-optimizer:${VERSION:-latest}
+    container_name: adaptive-serving-dev
+    ports:
+      - "8888:8888"  # Jupyter
+      - "8080:8080"  # Development server
+    volumes:
+      - ..:/app
+    environment:
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+      - PYTHONPATH=/app/src
+    command: bash
+    tty: true
+    stdin_open: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - adaptive-serving-network
+    profiles:
+      - development
+
+volumes:
+  mlflow-data:
+    driver: local
+  redis-data:
+    driver: local
+  jupyter-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+networks:
+  adaptive-serving-network:
+    driver: bridge
+
+# Environment variables can be set in a .env file:
+# CUDA_VISIBLE_DEVICES=0
+# EXPERIMENTS=1000
+# JUPYTER_TOKEN=your-secure-token
+# GRAFANA_PASSWORD=your-secure-password
+# VERSION=1.0.0

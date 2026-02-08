@@ -1,0 +1,131 @@
+# Default configuration for Adaptive Model Serving Optimizer
+# This file contains the default settings for all components of the system.
+
+# Global settings
+project_name: "adaptive-model-serving-optimizer"
+version: "1.0.0"
+seed: 42
+device: "cuda"  # or "cpu"
+debug: false
+log_level: "INFO"
+
+# Performance settings
+mixed_precision: true
+compile_model: true
+optimize_memory: true
+
+# Serving configuration
+serving:
+  # TensorRT configuration
+  tensorrt_config:
+    precision: "fp16"  # fp32, fp16, int8
+    max_workspace_size: 1073741824  # 1GB in bytes
+    min_timing_iterations: 2
+    avg_timing_iterations: 1
+    max_batch_size: 32
+    opt_batch_size: 8
+
+  # ONNX Runtime configuration
+  onnx_config:
+    providers:
+      - "CUDAExecutionProvider"
+      - "CPUExecutionProvider"
+    provider_options:
+      - device_id: 0
+      - {}
+    session_options:
+      intra_op_num_threads: 4
+      inter_op_num_threads: 4
+      execution_mode: "ORT_SEQUENTIAL"
+      graph_optimization_level: "ORT_ENABLE_ALL"
+
+  # PyTorch configuration
+  pytorch_config:
+    device: "cuda"
+    precision: "float16"  # float32, float16, bfloat16
+    compile_mode: "default"  # default, reduce-overhead, max-autotune
+    dynamic_batching: true
+    jit_compile: true
+
+# Multi-armed bandit configuration
+bandits:
+  algorithm: "ucb"  # ucb, thompson, epsilon_greedy
+  epsilon: 0.1
+  alpha: 1.0
+  beta: 1.0
+  confidence_interval: 0.95
+  exploration_decay: 0.995
+  min_exploration: 0.01
+  window_size: 1000
+  update_frequency: 10
+
+# Monitoring configuration
+monitoring:
+  latency_percentiles:
+    - 50.0
+    - 90.0
+    - 95.0
+    - 99.0
+  accuracy_threshold: 0.005  # Maximum accuracy degradation allowed
+  throughput_window: 60  # seconds
+  metric_collection_interval: 5  # seconds
+  alert_thresholds:
+    p99_latency_ms: 100.0
+    accuracy_drop: 0.01
+    error_rate: 0.05
+    memory_usage_percent: 90.0
+
+# Training configuration
+training:
+  batch_size: 32
+  learning_rate: 0.001
+  epochs: 100
+  early_stopping_patience: 10
+  validation_split: 0.2
+  optimizer: "adamw"
+  scheduler: "cosine"
+  weight_decay: 0.0001
+  grad_clip_norm: 1.0
+  checkpoint_frequency: 10
+
+  # Model compression settings
+  pruning_sparsity: 0.1
+  quantization_bits: 8
+  distillation_temperature: 4.0
+  distillation_alpha: 0.7
+
+# Data configuration
+data:
+  data_dir: "./data"
+  cache_dir: "./cache"
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2
+
+  # Dataset settings
+  train_transforms:
+    - "resize"
+    - "normalize"
+    - "augment"
+  val_transforms:
+    - "resize"
+    - "normalize"
+
+  # Preprocessing settings
+  image_size: [224, 224]
+  normalize_mean: [0.485, 0.456, 0.406]
+  normalize_std: [0.229, 0.224, 0.225]
+
+# MLflow configuration
+mlflow:
+  tracking_uri: "http://localhost:5000"
+  experiment_name: "adaptive_serving_optimizer"
+  artifact_location: null
+  registry_uri: null
+
+  # Logging settings
+  log_artifacts: true
+  log_models: true
+  log_metrics_step: 1
+  log_params: true
+  auto_log: true

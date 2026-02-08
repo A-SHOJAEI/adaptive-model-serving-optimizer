@@ -1,0 +1,84 @@
+# Docker Compose configuration for Adaptive Model Serving Optimizer
+version: '3.8'
+
+services:
+  # Main application service
+  adaptive-serving:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: adaptive-serving-optimizer:latest
+    container_name: adaptive-serving-optimizer
+    volumes:
+      - ./data:/app/data
+      - ./outputs:/app/outputs
+      - ./cache:/app/cache
+      - ./logs:/app/logs
+      - ./configs:/app/configs
+    environment:
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+      - PYTHONPATH=/app/src
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - adaptive-serving-network
+    depends_on:
+      - mlflow-server
+
+  # MLflow tracking server
+  mlflow-server:
+    image: python:3.9-slim
+    container_name: adaptive-serving-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow-data:/mlflow
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlflow/mlflow.db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlflow/artifacts
+    command: >
+      bash -c "
+        pip install mlflow==2.5.0 &&
+        mlflow server
+        --backend-store-uri sqlite:///mlflow/mlflow.db
+        --default-artifact-root /mlflow/artifacts
+        --host 0.0.0.0
+        --port 5000
+      "
+    networks:
+      - adaptive-serving-network
+
+  # Jupyter notebook service
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: adaptive-serving-optimizer:latest
+    container_name: adaptive-serving-jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-adaptive-serving}
+    command: >
+      bash -c "
+        pip install jupyter jupyterlab plotly &&
+        jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+        --notebook-dir=/app --NotebookApp.token='${JUPYTER_TOKEN:-adaptive-serving}'
+      "
+    networks:
+      - adaptive-serving-network
+
+volumes:
+  mlflow-data:
+
+networks:
+  adaptive-serving-network:
+    driver: bridge

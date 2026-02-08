@@ -1,0 +1,201 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# Project-specific ignores
+
+# Data files (root-anchored so src/.../data/ is NOT excluded)
+/data/
+*.csv
+*.parquet
+*.h5
+*.hdf5
+*.npy
+*.npz
+
+# Model artifacts (root-anchored so src/.../models/ is NOT excluded)
+/models/
+*.model
+*.joblib
+*.onnx
+*.pb
+*.tflite
+*.engine
+*.plan
+*.wts
+*.weights
+
+# Binary / serialized artifacts
+*.log
+*.pt
+*.pkl
+*.pickle
+
+# MLflow
+mlruns/
+mlartifacts/
+.mlflow/
+mlflow.db
+
+# Outputs and results
+outputs/
+results/
+experiments/
+logs/
+artifacts/
+checkpoints/
+cache/
+temp/
+tmp/
+
+# Docker overrides
+docker-compose.override.yml
+
+# Security
+*.pem
+*.key
+*.crt
+*.p12
+*.keystore
+secrets/
+credentials/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Profiling
+*.prof
+*.profile
+profile.stats
+
+# TensorBoard
+tensorboard/
+tb_logs/
+
+# Ray
+ray_results/
+
+# Wandb
+wandb/
+
+# Custom project files
+bandit-report.json
+safety-report.json
+*.trace
+
+# Large files
+*.zip
+*.tar.gz
+*.7z
+*.rar
+
+# Generated documentation
+api_docs/
+_build/
+_static/
+_templates/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3

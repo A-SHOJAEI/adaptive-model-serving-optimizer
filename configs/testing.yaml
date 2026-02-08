@@ -1,0 +1,73 @@
+# Testing environment configuration
+# This file contains testing-specific overrides for the default configuration.
+
+# Testing global settings
+debug: true
+log_level: "DEBUG"
+device: "cpu"  # Use CPU for deterministic testing
+
+# Disable optimizations that can affect test determinism
+mixed_precision: false
+compile_model: false
+optimize_memory: false
+
+# Minimal serving configuration for testing
+serving:
+  tensorrt_config:
+    max_batch_size: 4
+    opt_batch_size: 2
+    max_workspace_size: 268435456  # 256MB for testing
+
+  pytorch_config:
+    device: "cpu"
+    precision: "float32"
+    jit_compile: false
+    dynamic_batching: false
+
+  onnx_config:
+    providers:
+      - "CPUExecutionProvider"
+    provider_options:
+      - {}
+    session_options:
+      intra_op_num_threads: 1  # Single thread for determinism
+      inter_op_num_threads: 1
+
+# Minimal training settings for quick tests
+training:
+  batch_size: 4
+  epochs: 2
+  early_stopping_patience: 1
+  checkpoint_frequency: 1
+  learning_rate: 0.01  # Higher LR for quick convergence in tests
+
+# Fast data loading for tests
+data:
+  num_workers: 0  # No multiprocessing in tests
+  prefetch_factor: 2
+  pin_memory: false
+  cache_dir: "./test_cache"
+
+# Test bandit settings
+bandits:
+  algorithm: "ucb"
+  epsilon: 0.2  # High exploration for test coverage
+  update_frequency: 1  # Update every iteration
+  window_size: 10
+
+# Frequent monitoring for test validation
+monitoring:
+  metric_collection_interval: 1
+  alert_thresholds:
+    p99_latency_ms: 1000.0  # Very lenient for tests
+    accuracy_drop: 0.1
+    error_rate: 0.2
+    memory_usage_percent: 99.0
+
+# Testing MLflow settings
+mlflow:
+  tracking_uri: "file:./test_mlruns"
+  experiment_name: "adaptive_serving_optimizer_test"
+  log_artifacts: false  # Don't clutter test environment
+  log_models: false
+  auto_log: false

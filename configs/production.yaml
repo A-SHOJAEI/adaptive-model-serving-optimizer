@@ -1,0 +1,77 @@
+# Production environment configuration
+# This file contains production-specific overrides for the default configuration.
+
+# Production global settings
+debug: false
+log_level: "WARNING"  # Reduce log verbosity in production
+
+# Enable all performance optimizations
+mixed_precision: true
+compile_model: true
+optimize_memory: true
+
+# Production device settings (prefer GPU if available)
+device: "cuda"
+
+# Serving configuration optimized for production throughput
+serving:
+  tensorrt_config:
+    max_batch_size: 64  # Larger batches for throughput
+    opt_batch_size: 16
+    max_workspace_size: 2147483648  # 2GB for production
+
+  pytorch_config:
+    device: "cuda"
+    precision: "float16"
+    jit_compile: true
+    compile_mode: "max-autotune"  # Maximum optimization
+    dynamic_batching: true
+
+  onnx_config:
+    providers:
+      - "CUDAExecutionProvider"
+      - "CPUExecutionProvider"
+    session_options:
+      intra_op_num_threads: 8  # More threads for production
+      inter_op_num_threads: 8
+      execution_mode: "ORT_PARALLEL"  # Parallel execution
+
+# Production training settings
+training:
+  batch_size: 64
+  epochs: 200
+  early_stopping_patience: 20
+  checkpoint_frequency: 50
+
+# Production data settings
+data:
+  num_workers: 8  # More workers for data loading
+  prefetch_factor: 4
+  pin_memory: true
+
+# Bandit algorithm settings for production stability
+bandits:
+  epsilon: 0.05  # Less exploration in production
+  exploration_decay: 0.999
+  min_exploration: 0.001
+  update_frequency: 50  # Less frequent updates for stability
+  window_size: 10000  # Larger window for more stable estimates
+
+# Strict monitoring for production
+monitoring:
+  metric_collection_interval: 10
+  alert_thresholds:
+    p99_latency_ms: 50.0  # Strict latency requirements
+    accuracy_drop: 0.005
+    error_rate: 0.01
+    memory_usage_percent: 80.0  # Conservative memory usage
+
+# Production MLflow settings
+mlflow:
+  tracking_uri: "${MLFLOW_TRACKING_URI}"  # Environment variable
+  experiment_name: "adaptive_serving_optimizer_prod"
+  artifact_location: "${MLFLOW_ARTIFACT_LOCATION}"
+  registry_uri: "${MLFLOW_REGISTRY_URI}"
+  log_artifacts: true
+  log_models: true
+  auto_log: true
