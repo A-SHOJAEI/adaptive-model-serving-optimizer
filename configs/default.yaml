@@ -11,7 +11,7 @@ log_level: "INFO"
 
 # Performance settings
 mixed_precision: true
-compile_model: true
+compile_model: false
 optimize_memory: true
 
 # Serving configuration
@@ -43,9 +43,9 @@ serving:
   pytorch_config:
     device: "cuda"
     precision: "float16"  # float32, float16, bfloat16
-    compile_mode: "default"  # default, reduce-overhead, max-autotune
+    compile_mode: null  # default, reduce-overhead, max-autotune (null to disable)
     dynamic_batching: true
-    jit_compile: true
+    jit_compile: false
 
 # Multi-armed bandit configuration
 bandits:
