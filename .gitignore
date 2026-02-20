@@ -131,9 +131,8 @@ mlartifacts/
 .mlflow/
 mlflow.db
 
-# Outputs and results
+# Outputs
 outputs/
-results/
 experiments/
 logs/
 artifacts/

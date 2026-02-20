@@ -1,0 +1,102 @@
+{
+  "config": {
+    "bandit_algorithm": "ucb",
+    "num_experiments": 1000,
+    "device": "cuda"
+  },
+  "baseline_results": {
+    "pytorch_fast": {
+      "mean_latency_ms": 25.813762664794922,
+      "p95_latency_ms": 38.204689025878906,
+      "p99_latency_ms": 97.7035140991211,
+      "mean_accuracy": 0.0966796875,
+      "mean_throughput": 1414.9381103515625,
+      "total_samples": 1000
+    },
+    "pytorch_standard": {
+      "mean_latency_ms": 22.649852752685547,
+      "p95_latency_ms": 27.66050910949707,
+      "p99_latency_ms": 27.819766998291016,
+      "mean_accuracy": 0.0966796875,
+      "mean_throughput": 1419.1048583984375,
+      "total_samples": 1000
+    },
+    "onnx_optimized": {
+      "mean_latency_ms": 261.09228515625,
+      "p95_latency_ms": 276.1847229003906,
+      "p99_latency_ms": 283.57489013671875,
+      "mean_accuracy": 0.0966796875,
+      "mean_throughput": 119.68445587158203,
+      "total_samples": 1000
+    }
+  },
+  "final_results": {
+    "pytorch_fast": {
+      "mean_latency_ms": 22.57004737854004,
+      "p95_latency_ms": 27.38920783996582,
+      "p99_latency_ms": 27.464462280273438,
+      "mean_accuracy": 0.0966796875,
+      "mean_throughput": 1418.78076171875,
+      "total_samples": 1000
+    },
+    "pytorch_standard": {
+      "mean_latency_ms": 22.435426712036133,
+      "p95_latency_ms": 27.578018188476562,
+      "p99_latency_ms": 27.650867462158203,
+      "mean_accuracy": 0.0966796875,
+      "mean_throughput": 1417.281494140625,
+      "total_samples": 1000
+    },
+    "onnx_optimized": {
+      "mean_latency_ms": 263.33074951171875,
+      "p95_latency_ms": 284.4398498535156,
+      "p99_latency_ms": 288.0855712890625,
+      "mean_accuracy": 0.0966796875,
+      "mean_throughput": 118.46208953857422,
+      "total_samples": 1000
+    }
+  },
+  "improvements": {
+    "baseline_strategy": "pytorch_standard",
+    "best_strategy": "pytorch_standard",
+    "p99_latency_reduction_percent": 0.6071205993320796,
+    "throughput_improvement_percent": -0.12848692942044454,
+    "model_accuracy_degradation_max_percent": 0.0,
+    "serving_cost_reduction_percent": 0.9466994906798677
+  },
+  "optimization_report": {
+    "best_strategy": "pytorch_standard",
+    "best_reward": 0.7249109355415544,
+    "total_experiments": 1000,
+    "convergence_achieved": false,
+    "strategy_statistics": {
+      "pytorch_fast": {
+        "pulls": 465,
+        "avg_reward": 0.7246296957871751,
+        "p95_latency_ms": 7.123023598978761,
+        "avg_throughput": 1499.226817655118,
+        "error_rate": 0.021720430107526882
+      },
+      "pytorch_standard": {
+        "pulls": 467,
+        "avg_reward": 0.7249109355415544,
+        "p95_latency_ms": 7.499975300015649,
+        "avg_throughput": 1446.8500379737354,
+        "error_rate": 0.022483940042826552
+      },
+      "onnx_optimized": {
+        "pulls": 68,
+        "avg_reward": 0.44518529290474623,
+        "p95_latency_ms": 78.50655224574439,
+        "avg_throughput": 112.92841525620807,
+        "error_rate": 0.02132352941176471
+      }
+    },
+    "performance_improvements": {
+      "latency_improvement_percent": -54.83993278061769,
+      "throughput_improvement_percent": 15.449114182449927,
+      "accuracy_improvement_percent": -6.024096385542161
+    }
+  },
+  "experiment_duration_minutes": 0.2978671749432882
+}

@@ -39,21 +39,39 @@ predictions = adapter.predict(input_batch)
 
 ## Results
 
-Performance results from UCB bandit optimization over 100 experiments with three serving strategies (PyTorch optimized, PyTorch standard, ONNX Runtime):
+Performance results from UCB bandit optimization over 1,000 experiments with three serving strategies (PyTorch fast, PyTorch standard, ONNX optimized):
 
 | Metric | Value |
 |--------|-------|
-| Best Strategy | pytorch_fast (UCB bandit) |
-| Experiments Run | 42 / 100 selected pytorch_fast |
-| Average Reward | 0.730 |
-| P99 Latency Reduction | 86.7% |
-| Throughput Improvement | 16.4% |
+| Best Strategy | pytorch_standard (UCB bandit) |
+| Total Experiments | 1,000 |
+| Best Reward | 0.7249 |
+| P99 Latency | 27.65 ms |
+| P99 Latency Reduction | 0.61% |
+| Throughput | 1,417 samples/s |
 | Accuracy Degradation | 0.0% |
-| Serving Cost Reduction | 35.3% |
+| Serving Cost Reduction | 0.95% |
+| Experiment Duration | 0.30 minutes |
 
-**Strategy**: Multi-armed UCB bandit selecting between PyTorch optimized, standard PyTorch, and ONNX Runtime backends based on composite reward signal (latency, throughput, accuracy, cost).
+### Strategy Pull Distribution
 
-**Key finding**: The UCB bandit converges to the PyTorch optimized backend as the dominant strategy, achieving an 86.7% reduction in P99 latency and 35.3% cost savings with zero accuracy loss.
+| Strategy | Pulls | Avg Reward | P95 Latency (ms) | Avg Throughput (samples/s) | Error Rate |
+|----------|-------|------------|-------------------|---------------------------|------------|
+| pytorch_fast | 465 | 0.7246 | 7.12 | 1,499.23 | 2.17% |
+| pytorch_standard | 467 | 0.7249 | 7.50 | 1,446.85 | 2.25% |
+| onnx_optimized | 68 | 0.4452 | 78.51 | 112.93 | 2.13% |
+
+### Baseline vs. Final Performance
+
+| Strategy | Baseline P99 Latency (ms) | Final P99 Latency (ms) | Baseline Throughput | Final Throughput |
+|----------|--------------------------|------------------------|--------------------|-----------------:|
+| pytorch_fast | 97.70 | 27.46 | 1,414.94 | 1,418.78 |
+| pytorch_standard | 27.82 | 27.65 | 1,419.10 | 1,417.28 |
+| onnx_optimized | 283.57 | 288.09 | 119.68 | 118.46 |
+
+**Strategy**: Multi-armed UCB bandit selecting between PyTorch fast, PyTorch standard, and ONNX optimized backends based on composite reward signal (latency, throughput, accuracy, cost).
+
+**Key finding**: The UCB bandit nearly equally distributed pulls between PyTorch fast (465) and PyTorch standard (467), with both strategies achieving similar rewards (~0.725). ONNX optimized received only 68 pulls due to significantly higher latency (~78.5 ms P95 vs ~7.5 ms for PyTorch strategies). The optimizer identified pytorch_standard as the best strategy with a 0.61% P99 latency reduction and 0.95% serving cost reduction.
 
 ## Training
 
